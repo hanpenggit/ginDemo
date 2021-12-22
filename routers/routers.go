@@ -1,4 +1,4 @@
-package routes
+package routers
 
 import (
 	"ginDemo/service"
@@ -30,7 +30,17 @@ func IniConfigFromYaml() {
 	}
 }
 
-func SetupRouter() *gin.Engine {
+type Option func(*gin.Engine)
+
+var options = []Option{}
+
+// 注册app的路由配置
+func Include(opts ...Option) {
+	options = append(options, opts...)
+}
+
+// 初始化
+func Init() *gin.Engine {
 	//读取配置文件
 	IniConfigFromYaml()
 	//初始化日志
@@ -40,13 +50,11 @@ func SetupRouter() *gin.Engine {
 	gin.SetMode(CONFIG.RunMode)
 	//自定义日志，使用zap来记录日志，而不是把日志打印在控制台
 	r.Use(utils.GinLogger(utils.Logger), utils.GinRecovery(utils.Logger, true))
-
-	LoadRole(r)
-	LoadUser(r)
-
+	for _, opt := range options {
+		opt(r)
+	}
 	//自定义404的返回结果
 	r.NoRoute(func(c *gin.Context) { service.PageNotFind(c) })
-
 	return r
 }
 
