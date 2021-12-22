@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
 
 type Config struct {
@@ -24,7 +25,9 @@ var (
 )
 
 func main() {
+	//读取配置文件
 	IniConfigFromYaml()
+	//初始化日志
 	utils.InitLogger(CONFIG.LogPath)
 	//r := gin.Default()
 	r := gin.New()
@@ -230,6 +233,25 @@ func main() {
 		c.JSON(http.StatusOK, model.Success("test2", ""))
 	})
 
+	//可以匹配任何方式
+	r.Any("/any", func(c *gin.Context) {
+		method := c.Request.Method
+		c.JSON(http.StatusOK, model.Success("any调用成功，当前method:"+method, method))
+	})
+
+	//路由组,路由组也支持嵌套
+	systemGroup := r.Group("/system", StatCost())
+
+	systemGroup.GET("/a", func(c *gin.Context) { service.GetHello(c) })
+	systemGroup.GET("/b", func(c *gin.Context) { service.GetHello(c) })
+	systemGroup.POST("/c", func(c *gin.Context) { service.GetHello(c) })
+
+	userGroup := systemGroup.Group("user")
+
+	userGroup.GET("/a", func(c *gin.Context) { service.GetHello(c) })
+	userGroup.GET("/b", func(c *gin.Context) { service.GetHello(c) })
+	userGroup.POST("/c", func(c *gin.Context) { service.GetHello(c) })
+
 	//自定义404的返回结果
 	r.NoRoute(func(c *gin.Context) { service.PageNotFind(c) })
 
@@ -248,5 +270,20 @@ func IniConfigFromYaml() {
 	if err != nil {
 		utils.Logger.Error(err)
 		return
+	}
+}
+
+// StatCost 是一个统计耗时请求耗时的中间件
+func StatCost() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		start := time.Now()
+		c.Set("name", "xy") // 可以通过c.Set在请求上下文中设置值，后续的处理函数能够取到该值
+		// 调用该请求的剩余处理程序
+		c.Next()
+		// 不调用该请求的剩余处理程序
+		// c.Abort()
+		// 计算耗时
+		cost := time.Since(start)
+		log.Println(cost)
 	}
 }
