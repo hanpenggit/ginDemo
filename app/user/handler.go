@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
+	"time"
 )
 
 func aHandler(c *gin.Context) {
@@ -24,11 +25,20 @@ func loginHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, model.Fail("输入的参数有误", err.Error()))
 		return
 	}
-	// 校验用户名和密码是否正确
+	// 校验用户名和密码是否正确 模拟查询数据库
 	if user.Username == "admin" && user.Password == "admin" {
+
+		var role = []string{"admin", "user"}
+
+		var permission = []string{"/role/a", "/user/a"}
 		// 生成Token
-		tokenString, _ := utils.GenToken(user.Username)
-		c.JSON(http.StatusOK, model.Success("登录成功", gin.H{"token": tokenString}))
+		tokenString, err, expire := utils.GenToken(user.Username, role, permission)
+		if err != nil {
+			c.JSON(http.StatusOK, model.Fail("生成token失败", err.Error()))
+			return
+		}
+
+		c.JSON(http.StatusOK, model.Success("登录成功", gin.H{"token": tokenString, "exp": (expire - time.Now().Unix())}))
 		return
 	}
 	c.JSON(http.StatusOK, model.Success("账号或密码错误", ""))
@@ -56,6 +66,10 @@ func userDetailHandler(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	c.JSON(http.StatusOK, model.Success("获取用户信息成功", mc))
+	c.JSON(http.StatusOK, model.Success("获取用户信息成功", gin.H{
+		"username":   mc.Username,
+		"role":       mc.Role,
+		"permission": mc.Permission,
+		"exp":        (mc.ExpiresAt - time.Now().Unix())}))
 	return
 }

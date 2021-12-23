@@ -19,24 +19,30 @@ var MySecret = []byte("myjwtsecret")
 // 我们这里需要额外记录一个username字段，所以要自定义结构体
 // 如果想要保存更多信息，都可以添加到这个结构体中
 type MyClaims struct {
-	Username string `json:"username"`
+	Username   string   `json:"username"`
+	Role       []string `json:role`
+	Permission []string `json:permission`
 	jwt.StandardClaims
 }
 
 // GenToken 生成JWT
-func GenToken(username string) (string, error) {
+func GenToken(username string, role []string, permission []string) (string, error, int64) {
+	expire := time.Now().Add(TokenExpireDuration).Unix()
 	// 创建一个我们自己的声明
 	c := MyClaims{
-		username, // 自定义字段
+		username,   // 自定义字段
+		role,       // 自定义字段
+		permission, // 自定义字段
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(TokenExpireDuration).Unix(), // 过期时间
-			Issuer:    "ginDemo",                                  // 签发人
+			ExpiresAt: expire,    // 过期时间
+			Issuer:    "ginDemo", // 签发人
 		},
 	}
 	// 使用指定的签名方法创建签名对象
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
 	// 使用指定的secret签名并获得完整的编码后的字符串token
-	return token.SignedString(MySecret)
+	tokenValue, err := token.SignedString(MySecret)
+	return tokenValue, err, expire
 }
 
 // ParseToken 解析JWT
@@ -80,8 +86,17 @@ func JWTAuthMiddleware() func(c *gin.Context) {
 			c.Abort()
 			return
 		}
-		// 将当前请求的username信息保存到请求的上下文c上
-		c.Set("username", mc.Username)
-		c.Next() // 后续的处理函数可以用过c.Get("username")来获取当前请求的用户信息
+		var uri = c.Request.RequestURI
+		var method = c.Request.Method
+		for _, j := range mc.Permission {
+			if uri == j {
+				// 校验通过，存放用户信息
+				c.Set("username", mc.Username)
+				c.Next()
+				return
+			}
+		}
+		c.JSON(http.StatusUnauthorized, model.Success("您没有该权限: "+uri+"   ("+method+")", ""))
+		c.Abort()
 	}
 }
