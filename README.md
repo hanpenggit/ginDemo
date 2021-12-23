@@ -30,9 +30,9 @@ ginDemo
 ```
 
 
-###登录接口
+### 登录接口
 #### http://localhost:8085/login    
-####Content-Type : application/json
+#### Content-Type : application/json
 ```
 {
     "username":"admin",
@@ -51,7 +51,7 @@ ginDemo
 }
 ```
 
-###获取用户详情
+### 获取用户详情
 #### http://localhost:8085/user/detail
 #### 添加 header
 ```
