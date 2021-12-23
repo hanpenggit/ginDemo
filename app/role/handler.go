@@ -7,9 +7,9 @@ import (
 )
 
 func aHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, model.Success("role_a", ""))
+	c.JSON(http.StatusOK, model.Success("role_a", c.GetString("username")))
 }
 
 func bHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, model.Success("role_b", ""))
+	c.JSON(http.StatusOK, model.Success("role_b", c.GetString("username")))
 }

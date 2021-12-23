@@ -10,9 +10,11 @@ type R struct {
 	Data    interface{} `json:"data"`
 }
 
-type Login struct {
+type User struct {
 	Username string `form:"username" json:"username" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
+	Nickname string `form:"nickname" json:"nickname"`
+	Email    string `form:"email" json:"email"`
 }
 
 func Success(m string, d interface{}) *R {

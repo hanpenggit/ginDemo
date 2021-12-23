@@ -3,9 +3,12 @@ module ginDemo
 go 1.17
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.7.7
 	github.com/natefinch/lumberjack v2.0.0+incompatible
+	github.com/pkg/errors v0.8.1
 	go.uber.org/zap v1.19.1
+	gopkg.in/yaml.v2 v2.2.8
 )
 
 require (
@@ -26,5 +29,4 @@ require (
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
 	golang.org/x/sys v0.0.0-20210510120138-977fb7262007 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
-	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
