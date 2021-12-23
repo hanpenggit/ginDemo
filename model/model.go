@@ -11,8 +11,14 @@ type R struct {
 }
 
 type Login struct {
-	Username string `form:"username" json:"username" binding:"required"`
+	UserName string `form:"username" json:"username" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
+}
+
+type User struct {
+	UserName string `form:"username" json:"username" binding:"required"`
+	NickName string `form:"password" json:"password" binding:"required"`
+	Remarks  string `form:"remarks" json:"remarks" binding:"remarks"`
 }
 
 func Success(m string, d interface{}) *R {
